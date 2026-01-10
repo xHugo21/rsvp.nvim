@@ -8,7 +8,7 @@ local M = {}
 ---@field current_word number
 ---@field wpm number
 ---@field running boolean
----@field timer uv_timer_t|nil
+---@field timer uv.uv_timer_t|nil
 
 ---@type RsvpState|nil
 local state = nil
@@ -29,26 +29,42 @@ local function render_word(word)
     return
   end
 
+  local width = state.config.width
+  local height = state.config.height
+
   local display_lines = {}
-  local y_padding = math.floor((state.config.height - 2) / 2)
+
+  -- First line: status indicator right-aligned
+  local status = state.running and "PLAYING" or "PAUSED"
+  local status_text = string.format("[%s] WPM:%d", status, state.wpm)
+  local status_padding = width - #status_text
+  if status_padding < 0 then
+    status_padding = 0
+  end
+  table.insert(display_lines, string.rep(" ", status_padding) .. status_text)
+
+  -- Padding before the word (centered vertically, accounting for status line and help line)
+  local y_padding = math.floor((height - 3) / 2)
   for _ = 1, y_padding do
     table.insert(display_lines, "")
   end
 
-  local x_padding = math.floor((state.config.width - #word) / 2)
-  local word_line = string.rep(" ", x_padding) .. word
-  table.insert(display_lines, word_line)
+  -- Centered word
+  local x_padding = math.floor((width - #word) / 2)
+  if x_padding < 0 then
+    x_padding = 0
+  end
+  table.insert(display_lines, string.rep(" ", x_padding) .. word)
 
   -- Fill remaining lines before help
-  local remaining = state.config.height - #display_lines - 1
+  local remaining = height - #display_lines - 1
   for _ = 1, remaining do
     table.insert(display_lines, "")
   end
 
-  -- Help line at bottom
-  local status = state.running and "PLAYING" or "PAUSED"
-  local help = string.format("[%s] WPM:%d | <Space>:Play/Pause | j/k:WPM | r:Reset | q:Quit", status, state.wpm)
-  local help_padding = math.floor((state.config.width - #help) / 2)
+  -- Help line at bottom (shorter now without status)
+  local help = "<Space>: Play/Pause | j/k: WPM | r: Reset | q: Quit"
+  local help_padding = math.floor((width - #help) / 2)
   if help_padding < 0 then
     help_padding = 0
   end
@@ -61,8 +77,9 @@ end
 
 local function stop_timer()
   if state and state.timer then
-    state.timer:stop()
-    state.timer:close()
+    local timer = state.timer
+    timer:stop()
+    timer:close()
     state.timer = nil
   end
 end
