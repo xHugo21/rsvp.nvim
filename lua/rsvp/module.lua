@@ -68,6 +68,7 @@ end
 M.start_rsvp = function(config)
   local words = get_words_from_buffer()
   if #words == 0 then -- TODO: Vim notify the user
+    vim.notify("Can't rsvp on empty buffer")
     return
   end
 
