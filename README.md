@@ -33,15 +33,15 @@ Click on `Use this template`
 ```
 .
 ├── lua
-│   ├── plugin_name
+│   ├── rsvp
 │   │   └── module.lua
-│   └── plugin_name.lua
+│   └── rsvp.lua
 ├── Makefile
 ├── plugin
-│   └── plugin_name.lua
+│   └── rsvp.lua
 ├── README.md
 ├── tests
 │   ├── minimal_init.lua
-│   └── plugin_name
-│       └── plugin_name_spec.lua
+│   └── rsvp
+│       └── rsvp_spec.lua
 ```
