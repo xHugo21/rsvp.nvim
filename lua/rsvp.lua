@@ -21,7 +21,7 @@ M.setup = function(args)
 end
 
 M.hello = function(user_opts)
-  return module.my_first_function(user_opts, M.config)
+  return module.open_floating_window(user_opts, M.config)
 end
 
 return M
