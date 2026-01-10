@@ -4,7 +4,7 @@ local module = require("rsvp.module")
 ---@class Config
 ---@field opt string Your config option
 local config = {
-  opt = "Hello!",
+  border = "solid",
 }
 
 ---@class MyModule
@@ -20,8 +20,8 @@ M.setup = function(args)
   M.config = vim.tbl_deep_extend("force", M.config, args or {})
 end
 
-M.hello = function()
-  return module.my_first_function(M.config.opt)
+M.hello = function(user_opts)
+  return module.my_first_function(user_opts, M.config)
 end
 
 return M
