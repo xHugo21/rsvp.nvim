@@ -25,9 +25,9 @@ M.setup = function(args)
   M.config = vim.tbl_deep_extend("force", M.config, args or {})
 end
 
-M.hello = function(opts)
+M.rsvp = function(opts)
   local final_opts = vim.tbl_deep_extend("force", M.config, opts or {})
-  return module.open_rsvp_window(final_opts)
+  return module.start_rsvp(final_opts)
 end
 
 return M

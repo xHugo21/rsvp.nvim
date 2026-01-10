@@ -33,7 +33,7 @@ local create_floating_window = function(config)
   return buf
 end
 
-local function start_rsvp(buf, words, config)
+local function print_words(buf, words, config)
   local current_word = 1
   local delay = 60000 / config.wpm
   local timer = vim.loop.new_timer()
@@ -65,7 +65,7 @@ local function start_rsvp(buf, words, config)
   )
 end
 
-M.open_rsvp_window = function(config)
+M.start_rsvp = function(config)
   local words = get_words_from_buffer()
   if #words == 0 then -- TODO: Vim notify the user
     return
@@ -73,7 +73,7 @@ M.open_rsvp_window = function(config)
 
   local buf = create_floating_window(config)
 
-  start_rsvp(buf, words, config)
+  print_words(buf, words, config)
 end
 
 return M
