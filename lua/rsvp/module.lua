@@ -36,7 +36,12 @@ end
 local function print_words(buf, words, config)
   local current_word = 1
   local delay = 60000 / config.wpm
-  local timer = vim.loop.new_timer()
+  local timer = vim.uv.new_timer()
+
+  if not timer then
+    vim.notify("Failed to create RSVP timer", vim.log.levels.ERROR)
+    return
+  end
 
   timer:start(
     0,
@@ -68,7 +73,7 @@ end
 M.start_rsvp = function(config)
   local words = get_words_from_buffer()
   if #words == 0 then -- TODO: Vim notify the user
-    vim.notify("Can't rsvp on empty buffer")
+    vim.notify("Can't rsvp on empty buffer", vim.log.levels.WARN)
     return
   end
 
