@@ -2,9 +2,13 @@
 local module = require("rsvp.module")
 
 ---@class Config
----@field opt string Your config option
+---@field border string Border style
+---@field width number Window width
+---@field height number Window height
 local config = {
-  border = "solid",
+  border = vim.opt.winborder:get() or "solid",
+  width = 60,
+  height = 20,
 }
 
 ---@class MyModule
@@ -20,8 +24,9 @@ M.setup = function(args)
   M.config = vim.tbl_deep_extend("force", M.config, args or {})
 end
 
-M.hello = function(user_opts)
-  return module.open_floating_window(user_opts, M.config)
+M.hello = function(opts)
+  local final_opts = vim.tbl_deep_extend("force", M.config, opts or {})
+  return module.open_floating_window(final_opts)
 end
 
 return M
