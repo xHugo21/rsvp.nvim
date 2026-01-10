@@ -17,7 +17,8 @@ local ORP_HL_GROUP = "RsvpORP"
 ---@type RsvpState|nil
 local state = nil
 
-local function get_words_from_buffer()
+---@return string[]
+M.get_words_from_buffer = function()
   local lines = vim.api.nvim_buf_get_lines(0, 0, -1, false)
   local words = {}
   for _, line in ipairs(lines) do
@@ -26,6 +27,16 @@ local function get_words_from_buffer()
     end
   end
   return words
+end
+
+---@param word_len number
+---@return number
+M.calculate_orp = function(word_len)
+  local orp_index = math.floor((word_len + 2) / 4) + 1
+  if orp_index > word_len then
+    orp_index = math.max(1, word_len)
+  end
+  return orp_index
 end
 
 local function render_word(word)
@@ -37,11 +48,8 @@ local function render_word(word)
   local height = state.config.height
   local word_len = #word
 
-  -- Calculate ORP index (1-based): floor((n + 2) / 4) + 1
-  local orp_index = math.floor((word_len + 2) / 4) + 1
-  if orp_index > word_len then
-    orp_index = math.max(1, word_len)
-  end
+  -- Calculate ORP index (1-based)
+  local orp_index = M.calculate_orp(word_len)
 
   local display_lines = {}
 
@@ -77,8 +85,8 @@ local function render_word(word)
     table.insert(display_lines, "")
   end
 
-  -- Help line at bottom (shorter now without status)
-  local help = "<Space>: Play/Pause | j/k: WPM | r: Reset | q: Quit"
+  -- Help line at bottom
+  local help = "<Space>:Play/Pause | j/k:WPM | r:Reset | q:Quit"
   local help_padding = math.floor((width - #help) / 2)
   if help_padding < 0 then
     help_padding = 0
@@ -244,7 +252,7 @@ local function create_floating_window(config)
 end
 
 M.start_rsvp = function(config)
-  local words = get_words_from_buffer()
+  local words = M.get_words_from_buffer()
   if #words == 0 then
     vim.notify("Can't RSVP on empty buffer", vim.log.levels.WARN)
     return
