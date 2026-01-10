@@ -27,19 +27,53 @@ local create_floating_window = function(config)
   }
   vim.api.nvim_open_win(buf, true, win_opts)
 
-  vim.api.nvim_set_option_value("modifiable", false, { buf = buf })
   vim.api.nvim_set_option_value("readonly", true, { buf = buf })
 
   vim.keymap.set("n", "q", "<cmd>close<CR>", { buffer = buf, silent = true })
+  return buf
+end
+
+local function start_rsvp(buf, words, config)
+  local current_word = 1
+  local delay = 60000 / config.wpm
+  local timer = vim.loop.new_timer()
+
+  timer:start(
+    0,
+    delay,
+    vim.schedule_wrap(function()
+      if not vim.api.nvim_buf_is_valid(buf) or current_word > #words then
+        timer:stop()
+        timer:close()
+        return
+      end
+
+      local word = words[current_word]
+      local display_lines = {}
+      local y_padding = math.floor((config.height - 1) / 2)
+      for _ = 1, y_padding do
+        table.insert(display_lines, "")
+      end
+      local x_padding = math.floor((config.width - #word) / 2)
+      local rsvp_line = string.rep(" ", x_padding) .. word
+      table.insert(display_lines, rsvp_line)
+
+      vim.api.nvim_buf_set_lines(buf, 0, -1, false, display_lines)
+
+      current_word = current_word + 1
+    end)
+  )
 end
 
 M.open_rsvp_window = function(config)
   local words = get_words_from_buffer()
-  if #words == 0 then -- TODO: Maybe vim notify the user
+  if #words == 0 then -- TODO: Vim notify the user
     return
   end
 
-  create_floating_window(config)
+  local buf = create_floating_window(config)
+
+  start_rsvp(buf, words, config)
 end
 
 return M

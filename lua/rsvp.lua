@@ -9,6 +9,7 @@ local config = {
   border = vim.opt.winborder:get() or "solid",
   width = 60,
   height = 20,
+  wpm = 300,
 }
 
 ---@class MyModule
