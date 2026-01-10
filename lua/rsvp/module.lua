@@ -1,8 +1,12 @@
 ---@class CustomModule
 local M = {}
 
+-- Highlight group for ORP
+local ORP_HL_GROUP = "RsvpORP"
+
 ---@class RsvpState
 ---@field buf number
+---@field ns number Namespace for extmarks
 ---@field words string[]
 ---@field config table
 ---@field current_word number
@@ -31,6 +35,13 @@ local function render_word(word)
 
   local width = state.config.width
   local height = state.config.height
+  local word_len = #word
+
+  -- Calculate ORP index (1-based): floor((n + 2) / 4) + 1
+  local orp_index = math.floor((word_len + 2) / 4) + 1
+  if orp_index > word_len then
+    orp_index = math.max(1, word_len)
+  end
 
   local display_lines = {}
 
@@ -49,12 +60,16 @@ local function render_word(word)
     table.insert(display_lines, "")
   end
 
-  -- Centered word
-  local x_padding = math.floor((width - #word) / 2)
+  -- Center the word so that the ORP character is at the center of the window
+  local center_col = math.floor(width / 2)
+  local x_padding = center_col - orp_index
   if x_padding < 0 then
     x_padding = 0
   end
-  table.insert(display_lines, string.rep(" ", x_padding) .. word)
+  local word_line = string.rep(" ", x_padding) .. word
+  table.insert(display_lines, word_line)
+
+  local word_line_index = #display_lines - 1 -- 0-based line index for extmarks
 
   -- Fill remaining lines before help
   local remaining = height - #display_lines - 1
@@ -72,6 +87,18 @@ local function render_word(word)
 
   vim.api.nvim_set_option_value("modifiable", true, { buf = state.buf })
   vim.api.nvim_buf_set_lines(state.buf, 0, -1, false, display_lines)
+
+  -- Clear previous extmarks and add ORP highlight
+  vim.api.nvim_buf_clear_namespace(state.buf, state.ns, 0, -1)
+
+  if word_len > 0 then
+    local orp_col = x_padding + orp_index - 1 -- 0-based column
+    vim.api.nvim_buf_set_extmark(state.buf, state.ns, word_line_index, orp_col, {
+      end_col = orp_col + 1,
+      hl_group = ORP_HL_GROUP,
+    })
+  end
+
   vim.api.nvim_set_option_value("modifiable", false, { buf = state.buf })
 end
 
@@ -225,8 +252,17 @@ M.start_rsvp = function(config)
 
   local buf = create_floating_window(config)
 
+  -- Create namespace for ORP highlights
+  local ns = vim.api.nvim_create_namespace("rsvp_orp")
+
+  -- Define highlight group if not already defined
+  if vim.fn.hlexists(ORP_HL_GROUP) == 0 then
+    vim.api.nvim_set_hl(0, ORP_HL_GROUP, { link = "Keyword", default = true })
+  end
+
   state = {
     buf = buf,
+    ns = ns,
     words = words,
     config = config,
     current_word = 1,
