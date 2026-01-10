@@ -1,47 +1,54 @@
-# A Neovim Plugin Template
+# rsvp.nvim
 
-![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/ellisonleao/nvim-plugin-template/lint-test.yml?branch=main&style=for-the-badge)
-![Lua](https://img.shields.io/badge/Made%20with%20Lua-blueviolet.svg?style=for-the-badge&logo=lua)
+A Neovim plugin for Rapid Serial Visual Presentation (RSVP). Read through text faster by flashing words one by one in a centered floating window, keeping your eyes focused on a single point.
 
-A template repository for Neovim plugins.
+## Installation
 
-## Using it
+Using [lazy.nvim](https://github.com/folke/lazy.nvim):
 
-Via `gh`:
-
+```lua
+{
+  "xhugo21/rsvp.nvim",
+  opts = {
+    wpm = 300,        -- Initial words per minute
+    width = 60,       -- Window width
+    height = 20,      -- Window height
+    border = "solid", -- Border style: "none", "single", "double", "rounded", "solid", "shadow"
+  },
+}
 ```
-$ gh repo create my-plugin -p ellisonleao/nvim-plugin-template
-```
 
-Via github web page:
+## Usage
 
-Click on `Use this template`
+### Commands
 
-![](https://docs.github.com/assets/cb-36544/images/help/repository/use-this-template-button.png)
+- `:Rsvp`: Start the RSVP presentation for the current buffer.
 
-## Features and structure
+### Controls
 
-- 100% Lua
-- Github actions for:
-  - running tests using [plenary.nvim](https://github.com/nvim-lua/plenary.nvim) and [busted](https://olivinelabs.com/busted/)
-  - check for formatting errors (Stylua)
-  - vimdocs autogeneration from README.md file
-  - luarocks release (LUAROCKS_API_KEY secret configuration required)
+Once the RSVP window is open, you can use the following keymaps:
 
-### Plugin structure
+| Key | Action |
+| :--- | :--- |
+| **`<Space>`** | Toggle Play / Pause |
+| **`k`** | Increase WPM by 50 |
+| **`j`** | Decrease WPM by 50 |
+| **`r`** | Reset to the first word |
+| **`q`** | Close the window |
 
-```
-.
-├── lua
-│   ├── rsvp
-│   │   └── module.lua
-│   └── rsvp.lua
-├── Makefile
-├── plugin
-│   └── rsvp.lua
-├── README.md
-├── tests
-│   ├── minimal_init.lua
-│   └── rsvp
-│       └── rsvp_spec.lua
-```
+## Configuration
+
+| Option | Type | Default | Description |
+| --- | --- | --- | --- |
+| `wpm` | `number` | `300` | The reading speed in Words Per Minute. |
+| `width` | `number` | `60` | Width of the floating window. |
+| `height` | `number` | `20` | Height of the floating window. |
+| `border` | `string` | vim.opt.winborder or `"solid"` | Border style for the window. |
+
+## Dependencies
+
+- **Neovim >= 0.10.0**
+
+## License
+
+MIT
