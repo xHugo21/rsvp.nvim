@@ -5,6 +5,7 @@ local module = require("rsvp.module")
 ---@field border string Border style
 ---@field width number Window width
 ---@field height number Window height
+---@field wpm number Words per minute
 local config = {
   border = vim.opt.winborder:get() or "solid",
   width = 60,
