@@ -26,7 +26,7 @@ end
 
 M.hello = function(opts)
   local final_opts = vim.tbl_deep_extend("force", M.config, opts or {})
-  return module.open_floating_window(final_opts)
+  return module.open_rsvp_window(final_opts)
 end
 
 return M
