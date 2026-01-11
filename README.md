@@ -2,7 +2,7 @@
 
 A Neovim plugin for Rapid Serial Visual Presentation (RSVP). Read through text faster by flashing words one by one in a centered floating window, keeping your eyes focused on a single point.
 
-https://github.com/user-attachments/assets/9ecda46e-2361-4aea-bb21-1397381baf33
+https://github.com/user-attachments/assets/a8d5b70a-eaae-4ef9-a2dd-5ba8776a955b
 
 ## Installation
 
