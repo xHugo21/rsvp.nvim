@@ -47,12 +47,10 @@ local function render_word(word)
   local height = state.config.height
   local word_len = #word
 
-  -- Calculate ORP index (1-based)
   local orp_index = M.calculate_orp(word_len)
 
   local display_lines = {}
 
-  -- First line: status indicator right-aligned
   local status = state.running and "PLAYING" or "PAUSED"
   local status_text = string.format("[%s] WPM:%d", status, state.wpm)
   local status_padding = width - #status_text
@@ -61,15 +59,26 @@ local function render_word(word)
   end
   table.insert(display_lines, string.rep(" ", status_padding) .. status_text)
 
-  -- Padding before the word (centered vertically, accounting for status line and help line)
-  local y_padding = math.floor((height - 3) / 2)
+  local y_padding = math.floor((height - 5) / 2)
   for _ = 1, y_padding do
     table.insert(display_lines, "")
   end
 
-  -- Center the word so that the ORP character is at the center of the window
-  local center_col = math.floor(width / 2)
-  local x_padding = center_col - orp_index
+  local pivot_col = math.floor(width / 2)
+  local left_len = 6
+  local right_len = 7
+  local guide_padding = pivot_col - left_len
+  if guide_padding < 0 then
+    guide_padding = 0
+  end
+
+  local top_guide = string.rep(" ", guide_padding)
+    .. string.rep("─", left_len)
+    .. "┬"
+    .. string.rep("─", right_len)
+  table.insert(display_lines, top_guide)
+
+  local x_padding = pivot_col - orp_index + 1
   if x_padding < 0 then
     x_padding = 0
   end
@@ -78,13 +87,17 @@ local function render_word(word)
 
   local word_line_index = #display_lines - 1 -- 0-based line index for extmarks
 
-  -- Fill remaining lines before help
+  local bottom_guide = string.rep(" ", guide_padding)
+    .. string.rep("─", left_len)
+    .. "┴"
+    .. string.rep("─", right_len)
+  table.insert(display_lines, bottom_guide)
+
   local remaining = height - #display_lines - 1
   for _ = 1, remaining do
     table.insert(display_lines, "")
   end
 
-  -- Help line at bottom
   local help = "<Space>:Play/Pause | j/k:WPM | r:Reset | q:Quit"
   local help_padding = math.floor((width - #help) / 2)
   if help_padding < 0 then
@@ -95,7 +108,6 @@ local function render_word(word)
   vim.api.nvim_set_option_value("modifiable", true, { buf = state.buf })
   vim.api.nvim_buf_set_lines(state.buf, 0, -1, false, display_lines)
 
-  -- Clear previous extmarks and add ORP highlight
   vim.api.nvim_buf_clear_namespace(state.buf, state.ns, 0, -1)
 
   if word_len > 0 then
@@ -113,8 +125,10 @@ local function stop_timer()
   local s = state
   if s and s.timer then
     local timer = s.timer
-    timer:stop()
-    timer:close()
+    if timer then
+      timer:stop()
+      timer:close()
+    end
     s.timer = nil
   end
 end
@@ -241,7 +255,6 @@ local function create_floating_window(config)
   end, opts)
   vim.keymap.set("n", "r", reset, opts)
 
-  -- Cleanup on buffer delete
   vim.api.nvim_create_autocmd("BufWipeout", {
     buffer = buf,
     callback = cleanup,
@@ -260,7 +273,6 @@ M.start_rsvp = function(config)
 
   local buf = create_floating_window(config)
 
-  -- Create namespace for ORP highlights
   local ns = vim.api.nvim_create_namespace("rsvp_orp")
 
   if vim.fn.hlexists(ORP_HL_GROUP) == 0 then
