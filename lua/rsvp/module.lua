@@ -2,6 +2,8 @@
 local M = {}
 
 local ORP_HL_GROUP = "RsvpORP"
+local HELP_HL_GROUP = "RsvpBold"
+local PLAYING_HL_GROUP = "RsvpPlaying"
 
 ---@class RsvpState
 ---@field buf number
@@ -52,7 +54,7 @@ local function render_word(word)
   local display_lines = {}
 
   local status = state.running and "PLAYING" or "PAUSED"
-  local status_text = string.format("[%s] WPM:%d", status, state.wpm)
+  local status_text = string.format("[%s] WPM: %d", status, state.wpm)
   local status_padding = width - #status_text
   if status_padding < 0 then
     status_padding = 0
@@ -98,7 +100,7 @@ local function render_word(word)
     table.insert(display_lines, "")
   end
 
-  local help = "<Space>:Play/Pause | j/k:WPM | r:Reset | q:Quit"
+  local help = "<Space>: Play/Pause | j/k: WPM | r: Reset | q: Quit"
   local help_padding = math.floor((width - #help) / 2)
   if help_padding < 0 then
     help_padding = 0
@@ -109,6 +111,39 @@ local function render_word(word)
   vim.api.nvim_buf_set_lines(state.buf, 0, -1, false, display_lines)
 
   vim.api.nvim_buf_clear_namespace(state.buf, state.ns, 0, -1)
+
+  -- Highlight status line
+  local status_line = display_lines[1]
+  if state.running then
+    local s, e = status_line:find("PLAYING", 1, true)
+    if s then
+      vim.api.nvim_buf_set_extmark(state.buf, state.ns, 0, s - 1, {
+        end_col = e,
+        hl_group = PLAYING_HL_GROUP,
+      })
+    end
+  end
+  local s_wpm, e_wpm = status_line:find("WPM", 1, true)
+  if s_wpm then
+    vim.api.nvim_buf_set_extmark(state.buf, state.ns, 0, s_wpm - 1, {
+      end_col = e_wpm,
+      hl_group = HELP_HL_GROUP,
+    })
+  end
+
+  -- Highlight help line
+  local help_line_idx = #display_lines - 1
+  local help_line = display_lines[#display_lines]
+  local help_keys = { "<Space>", "j/k", "r", "q" }
+  for _, key in ipairs(help_keys) do
+    local s, e = help_line:find(key, 1, true)
+    if s then
+      vim.api.nvim_buf_set_extmark(state.buf, state.ns, help_line_idx, s - 1, {
+        end_col = e,
+        hl_group = HELP_HL_GROUP,
+      })
+    end
+  end
 
   if word_len > 0 then
     local orp_col = x_padding + orp_index - 1 -- 0-based column
@@ -275,8 +310,11 @@ M.start_rsvp = function(config)
 
   local ns = vim.api.nvim_create_namespace("rsvp_orp")
 
+  vim.api.nvim_set_hl(0, HELP_HL_GROUP, { link = "@keyword", default = true })
+  vim.api.nvim_set_hl(0, PLAYING_HL_GROUP, { link = "@keyword", bold = true, default = true })
+
   if vim.fn.hlexists(ORP_HL_GROUP) == 0 then
-    vim.api.nvim_set_hl(0, ORP_HL_GROUP, { link = "@keyword", default = true })
+    vim.api.nvim_set_hl(0, ORP_HL_GROUP, { link = "@keyword", bold = true, default = true })
   end
 
   state = {
