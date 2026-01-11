@@ -1,4 +1,4 @@
-*rsvp.txt*          For Neovim >= 0.10.0          Last change: 2026 January 10
+*rsvp.txt*          For Neovim >= 0.10.0          Last change: 2026 January 11
 
 ==============================================================================
 Table of Contents                                     *rsvp-table-of-contents*
