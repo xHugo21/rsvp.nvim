@@ -1,7 +1,6 @@
 ---@class CustomModule
 local M = {}
 
--- Highlight group for ORP
 local ORP_HL_GROUP = "RsvpORP"
 
 ---@class RsvpState
@@ -111,11 +110,12 @@ local function render_word(word)
 end
 
 local function stop_timer()
-  if state and state.timer then
-    local timer = state.timer
+  local s = state
+  if s and s.timer then
+    local timer = s.timer
     timer:stop()
     timer:close()
-    state.timer = nil
+    s.timer = nil
   end
 end
 
@@ -263,9 +263,8 @@ M.start_rsvp = function(config)
   -- Create namespace for ORP highlights
   local ns = vim.api.nvim_create_namespace("rsvp_orp")
 
-  -- Define highlight group if not already defined
   if vim.fn.hlexists(ORP_HL_GROUP) == 0 then
-    vim.api.nvim_set_hl(0, ORP_HL_GROUP, { link = "Keyword", default = true })
+    vim.api.nvim_set_hl(0, ORP_HL_GROUP, { link = "@keyword", default = true })
   end
 
   state = {
