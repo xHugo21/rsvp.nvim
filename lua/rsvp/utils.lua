@@ -27,6 +27,9 @@ end
 ---@param total number
 ---@return string, number The progress bar string and filled char count
 M.build_progress_bar = function(bar_width, current, total)
+  if total <= 0 then
+    return string.rep("░", bar_width), 0
+  end
   local progress = math.min(1, math.max(0, (current - 1) / total))
   local filled = math.floor(progress * bar_width)
   local empty = bar_width - filled

@@ -21,7 +21,8 @@ end
 M.create_window = function(config)
   setup_highlights()
   local buf = vim.api.nvim_create_buf(false, true)
-  local ui = vim.api.nvim_list_uis()[1]
+  local ui_list = vim.api.nvim_list_uis()
+  local ui = #ui_list > 0 and ui_list[1] or config
 
   local win_opts = {
     relative = "editor",
