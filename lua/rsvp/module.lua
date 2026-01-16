@@ -67,28 +67,13 @@ local function render_word(word)
   local display_lines = {}
 
   local status = state.running and "PLAYING" or "PAUSED"
-  local progress_text = state.show_progress and string.format("  %d/%d", state.current_word, #state.words) or ""
-  local status_text = string.format("[%s] WPM: %d%s", status, state.wpm, progress_text)
-  local status_padding = width - #status_text
+  local progress_text = string.format("%d/%d", state.current_word, #state.words)
+  local status_text = string.format("[%s] WPM: %d", status, state.wpm)
+  local status_padding = width - #status_text - #progress_text
   if status_padding < 0 then
     status_padding = 0
   end
-  table.insert(display_lines, string.rep(" ", status_padding) .. status_text)
-
-  -- Progress bar
-  local filled_len = 0
-  local progress_bar_line_idx = -1
-  local progress_bar_filled_start = 0
-
-  if state.show_progress then
-    local bar_width = width - 2
-    local bar
-    bar, filled_len = build_progress_bar(bar_width, state.current_word, #state.words)
-    local bar_padding = math.floor((width - bar_width) / 2)
-    table.insert(display_lines, string.rep(" ", bar_padding) .. bar)
-    progress_bar_line_idx = #display_lines - 1
-    progress_bar_filled_start = bar_padding
-  end
+  table.insert(display_lines, progress_text .. string.rep(" ", status_padding) .. status_text)
 
   local y_padding = math.floor((height - (state.show_progress and 6 or 5)) / 2)
   for _ = 1, y_padding do
@@ -124,9 +109,25 @@ local function render_word(word)
     .. string.rep("─", right_len)
   table.insert(display_lines, bottom_guide)
 
-  local remaining = height - #display_lines - 1
+  -- Progress bar and Help line
+  local filled_len = 0
+  local progress_bar_line_idx = -1
+  local progress_bar_filled_start = 0
+
+  local bottom_fixed_lines = state.show_progress and 2 or 1
+  local remaining = height - #display_lines - bottom_fixed_lines
   for _ = 1, remaining do
     table.insert(display_lines, "")
+  end
+
+  if state.show_progress then
+    local bar_width = width - 2
+    local bar
+    bar, filled_len = build_progress_bar(bar_width, state.current_word, #state.words)
+    local bar_padding = math.floor((width - bar_width) / 2)
+    table.insert(display_lines, string.rep(" ", bar_padding) .. bar)
+    progress_bar_line_idx = #display_lines - 1
+    progress_bar_filled_start = bar_padding
   end
 
   local help = "<Space>: Play/Pause | j/k: WPM | p: Toggle Progress | r: Reset | q: Quit"
