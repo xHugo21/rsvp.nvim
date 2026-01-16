@@ -1,14 +1,26 @@
 -- main module file
 local module = require("rsvp.module")
 
+---Get the border style from winborder option (0.11+) or fallback to "none"
+---@return string|table
+local function get_default_border()
+  local ok, winborder = pcall(function()
+    return vim.opt.winborder:get()
+  end)
+  if ok and winborder and winborder ~= "" and (type(winborder) ~= "table" or #winborder > 0) then
+    return winborder
+  end
+  return "none"
+end
+
 ---@class Config
----@field border string Border style
+---@field border string|table Border style
 ---@field width number Window width
 ---@field height number Window height
 ---@field wpm number Words per minute
 ---@field show_progress boolean Show progress bar
 local config = {
-  border = vim.opt.winborder:get() or "none",
+  border = get_default_border(),
   width = 60,
   height = 20,
   wpm = 300,
