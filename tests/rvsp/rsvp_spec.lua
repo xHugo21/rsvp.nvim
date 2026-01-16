@@ -5,7 +5,7 @@ describe("rsvp", function()
   before_each(function()
     -- Reset config before each test
     rsvp.setup({
-      border = "solid",
+      border = "none",
       width = 60,
       height = 20,
       wpm = 300,
@@ -17,7 +17,7 @@ describe("rsvp", function()
       rsvp.setup({ wpm = 500, width = 80 })
       assert.are.equal(500, rsvp.config.wpm)
       assert.are.equal(80, rsvp.config.width)
-      assert.are.equal("solid", rsvp.config.border)
+      assert.are.equal("none", rsvp.config.border)
     end)
   end)
 

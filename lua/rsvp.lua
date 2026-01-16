@@ -7,7 +7,7 @@ local module = require("rsvp.module")
 ---@field height number Window height
 ---@field wpm number Words per minute
 local config = {
-  border = vim.opt.winborder:get() or "solid",
+  border = vim.opt.winborder:get() or "none",
   width = 60,
   height = 20,
   wpm = 300,

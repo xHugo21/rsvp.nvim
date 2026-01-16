@@ -15,7 +15,7 @@ Using [lazy.nvim](https://github.com/folke/lazy.nvim):
     wpm = 300,        -- Initial words per minute
     width = 60,       -- Window width
     height = 20,      -- Window height
-    border = "solid", -- Border style: "none", "single", "double", "rounded", "solid", "shadow"
+    border = "none", -- Border style: "none", "single", "double", "rounded", "solid", "shadow"
   },
 }
 ```
@@ -45,7 +45,7 @@ Once the RSVP window is open, you can use the following keymaps:
 | `wpm` | `number` | `300` | The reading speed in Words Per Minute. |
 | `width` | `number` | `60` | Width of the floating window. |
 | `height` | `number` | `20` | Height of the floating window. |
-| `border` | `string` | vim.opt.winborder or `"solid"` | Border style for the window. |
+| `border` | `string` | vim.opt.winborder or `"none"` | Border style for the window. |
 
 ## Dependencies
 
