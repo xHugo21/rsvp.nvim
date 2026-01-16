@@ -15,7 +15,8 @@ Using [lazy.nvim](https://github.com/folke/lazy.nvim):
     wpm = 300,        -- Initial words per minute
     width = 60,       -- Window width
     height = 20,      -- Window height
-    border = "none", -- Border style: "none", "single", "double", "rounded", "solid", "shadow"
+    border = "none",  -- Border style
+    show_progress = true, -- Show progress bar
   },
 }
 ```
@@ -35,7 +36,9 @@ Once the RSVP window is open, you can use the following keymaps:
 | **`<Space>`** | Toggle Play / Pause |
 | **`k`** | Increase WPM by 50 |
 | **`j`** | Decrease WPM by 50 |
+| **`p`** | Toggle progress bar visibility |
 | **`r`** | Reset to the first word |
+| **`?`** | Show help popup |
 | **`q`** | Close the window |
 
 ## Configuration
@@ -46,6 +49,7 @@ Once the RSVP window is open, you can use the following keymaps:
 | `width` | `number` | `60` | Width of the floating window. |
 | `height` | `number` | `20` | Height of the floating window. |
 | `border` | `string` | vim.opt.winborder or `"none"` | Border style for the window. |
+| `show_progress` | `boolean` | `true` | Whether to show the progress bar by default. |
 
 ## Dependencies
 
