@@ -130,7 +130,8 @@ local function render_word(word)
     progress_bar_filled_start = bar_padding
   end
 
-  local help = "<Space>: Play/Pause | j/k: WPM | p: Toggle Progress | r: Reset | q: Quit"
+  local play_pause_label = state.running and "Pause" or "Play"
+  local help = string.format("<Space>: %s | q: Quit | ?: Help", play_pause_label)
   local help_padding = math.floor((width - #help) / 2)
   if help_padding < 0 then
     help_padding = 0
@@ -172,7 +173,7 @@ local function render_word(word)
   -- Highlight help line
   local help_line_idx = #display_lines - 1
   local help_line = display_lines[#display_lines]
-  local help_keys = { "<Space>", "j/k", "p", "r", "q" }
+  local help_keys = { "<Space>", "q", "?" }
   for _, key in ipairs(help_keys) do
     local s, e = help_line:find(key, 1, true)
     if s then
@@ -297,6 +298,66 @@ local function reset()
   render_word(state.words[1] or "")
 end
 
+local function show_help_popup()
+  if not state then
+    return
+  end
+
+  local help_text = {
+    " RSVP.nvim Keybindings",
+    " ─────────────────────",
+    " <Space> : Play / Pause",
+    " j       : Decrease WPM (-50)",
+    " k       : Increase WPM (+50)",
+    " p       : Toggle Progress Bar",
+    " r       : Reset to start",
+    " q       : Close RSVP",
+    " ?       : Show this help",
+    " ─────────────────────",
+    " Press any key to close",
+  }
+
+  local width = 30
+  local height = #help_text
+
+  local buf = vim.api.nvim_create_buf(false, true)
+  vim.api.nvim_buf_set_lines(buf, 0, -1, false, help_text)
+  vim.api.nvim_set_option_value("modifiable", false, { buf = buf })
+
+  local win_opts = {
+    relative = "win",
+    win = vim.api.nvim_get_current_win(),
+    width = width,
+    height = height,
+    row = math.floor((state.config.height - height) / 2),
+    col = math.floor((state.config.width - width) / 2),
+    style = "minimal",
+    border = state.config.border,
+  }
+
+  local win = vim.api.nvim_open_win(buf, true, win_opts)
+
+  -- Close on any key (common ones)
+  local close_keys = { "q", "<Esc>", "<CR>", "<Space>", "?" }
+  for _, key in ipairs(close_keys) do
+    vim.keymap.set("n", key, function()
+      if vim.api.nvim_win_is_valid(win) then
+        vim.api.nvim_win_close(win, true)
+      end
+    end, { buffer = buf, silent = true })
+  end
+
+  vim.api.nvim_create_autocmd("WinLeave", {
+    buffer = buf,
+    callback = function()
+      if vim.api.nvim_win_is_valid(win) then
+        vim.api.nvim_win_close(win, true)
+      end
+    end,
+    once = true,
+  })
+end
+
 local function cleanup()
   stop_timer()
   state = nil
@@ -336,6 +397,7 @@ local function create_floating_window(config)
   end, opts)
   vim.keymap.set("n", "p", toggle_progress, opts)
   vim.keymap.set("n", "r", reset, opts)
+  vim.keymap.set("n", "?", show_help_popup, opts)
 
   vim.api.nvim_create_autocmd("BufWipeout", {
     buffer = buf,
