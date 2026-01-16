@@ -22,14 +22,14 @@ M.create_window = function(config)
   setup_highlights()
   local buf = vim.api.nvim_create_buf(false, true)
   local ui_list = vim.api.nvim_list_uis()
-  local ui = #ui_list > 0 and ui_list[1] or config
+  local ui_info = #ui_list > 0 and ui_list[1] or config
 
   local win_opts = {
     relative = "editor",
     width = config.width,
     height = config.height,
-    row = math.floor((ui.height - config.height) / 2),
-    col = math.floor((ui.width - config.width) / 2),
+    row = math.floor((ui_info.height - config.height) / 2),
+    col = math.floor((ui_info.width - config.width) / 2),
     style = "minimal",
     border = config.border,
   }
@@ -223,6 +223,11 @@ M.render = function(data)
   end
 
   vim.api.nvim_set_option_value("modifiable", false, { buf = data.buf })
+
+  if data.win and vim.api.nvim_win_is_valid(data.win) then
+    local safe_row = math.max(1, math.min(#display_lines, 2))
+    pcall(vim.api.nvim_win_set_cursor, data.win, { safe_row, 0 })
+  end
 end
 
 return M
