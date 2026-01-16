@@ -4,6 +4,7 @@ local M = {}
 local ORP_HL_GROUP = "RsvpORP"
 local HELP_HL_GROUP = "RsvpBold"
 local PLAYING_HL_GROUP = "RsvpPlaying"
+local PROGRESS_HL_GROUP = "RsvpProgress"
 
 ---@class RsvpState
 ---@field buf number
@@ -13,6 +14,7 @@ local PLAYING_HL_GROUP = "RsvpPlaying"
 ---@field current_word number
 ---@field wpm number
 ---@field running boolean
+---@field show_progress boolean
 ---@field timer uv.uv_timer_t|nil
 
 ---@type RsvpState|nil
@@ -40,6 +42,17 @@ M.calculate_orp = function(word_len)
   return orp_index
 end
 
+---@param bar_width number
+---@param current number
+---@param total number
+---@return string, number The progress bar string and filled char count
+local function build_progress_bar(bar_width, current, total)
+  local progress = math.min(1, math.max(0, (current - 1) / total))
+  local filled = math.floor(progress * bar_width)
+  local empty = bar_width - filled
+  return string.rep("█", filled) .. string.rep("░", empty), filled
+end
+
 local function render_word(word)
   if not state or not vim.api.nvim_buf_is_valid(state.buf) then
     return
@@ -54,14 +67,30 @@ local function render_word(word)
   local display_lines = {}
 
   local status = state.running and "PLAYING" or "PAUSED"
-  local status_text = string.format("[%s] WPM: %d", status, state.wpm)
+  local progress_text = state.show_progress and string.format("  %d/%d", state.current_word, #state.words) or ""
+  local status_text = string.format("[%s] WPM: %d%s", status, state.wpm, progress_text)
   local status_padding = width - #status_text
   if status_padding < 0 then
     status_padding = 0
   end
   table.insert(display_lines, string.rep(" ", status_padding) .. status_text)
 
-  local y_padding = math.floor((height - 5) / 2)
+  -- Progress bar
+  local filled_len = 0
+  local progress_bar_line_idx = -1
+  local progress_bar_filled_start = 0
+
+  if state.show_progress then
+    local bar_width = width - 2
+    local bar
+    bar, filled_len = build_progress_bar(bar_width, state.current_word, #state.words)
+    local bar_padding = math.floor((width - bar_width) / 2)
+    table.insert(display_lines, string.rep(" ", bar_padding) .. bar)
+    progress_bar_line_idx = #display_lines - 1
+    progress_bar_filled_start = bar_padding
+  end
+
+  local y_padding = math.floor((height - (state.show_progress and 6 or 5)) / 2)
   for _ = 1, y_padding do
     table.insert(display_lines, "")
   end
@@ -100,7 +129,7 @@ local function render_word(word)
     table.insert(display_lines, "")
   end
 
-  local help = "<Space>: Play/Pause | j/k: WPM | r: Reset | q: Quit"
+  local help = "<Space>: Play/Pause | j/k: WPM | p: Toggle Progress | r: Reset | q: Quit"
   local help_padding = math.floor((width - #help) / 2)
   if help_padding < 0 then
     help_padding = 0
@@ -131,10 +160,18 @@ local function render_word(word)
     })
   end
 
+  -- Highlight progress bar filled portion
+  if filled_len > 0 then
+    vim.api.nvim_buf_set_extmark(state.buf, state.ns, progress_bar_line_idx, progress_bar_filled_start, {
+      end_col = progress_bar_filled_start + (filled_len * 3), -- █ is 3 bytes
+      hl_group = PROGRESS_HL_GROUP,
+    })
+  end
+
   -- Highlight help line
   local help_line_idx = #display_lines - 1
   local help_line = display_lines[#display_lines]
-  local help_keys = { "<Space>", "j/k", "r", "q" }
+  local help_keys = { "<Space>", "j/k", "p", "r", "q" }
   for _, key in ipairs(help_keys) do
     local s, e = help_line:find(key, 1, true)
     if s then
@@ -225,6 +262,14 @@ local function toggle_play()
   end
 end
 
+local function toggle_progress()
+  if not state then
+    return
+  end
+  state.show_progress = not state.show_progress
+  render_word(state.words[math.max(1, state.current_word - 1)] or state.words[1] or "")
+end
+
 local function adjust_wpm(delta)
   if not state then
     return
@@ -288,6 +333,7 @@ local function create_floating_window(config)
   vim.keymap.set("n", "k", function()
     adjust_wpm(50)
   end, opts)
+  vim.keymap.set("n", "p", toggle_progress, opts)
   vim.keymap.set("n", "r", reset, opts)
 
   vim.api.nvim_create_autocmd("BufWipeout", {
@@ -312,6 +358,7 @@ M.start_rsvp = function(config)
 
   vim.api.nvim_set_hl(0, HELP_HL_GROUP, { link = "@keyword", default = true })
   vim.api.nvim_set_hl(0, PLAYING_HL_GROUP, { link = "@keyword", bold = true, default = true })
+  vim.api.nvim_set_hl(0, PROGRESS_HL_GROUP, { link = "@keyword", default = true })
 
   if vim.fn.hlexists(ORP_HL_GROUP) == 0 then
     vim.api.nvim_set_hl(0, ORP_HL_GROUP, { link = "@keyword", bold = true, default = true })
@@ -325,6 +372,7 @@ M.start_rsvp = function(config)
     current_word = 1,
     wpm = config.wpm,
     running = false,
+    show_progress = config.show_progress,
     timer = nil,
   }
 

@@ -6,11 +6,13 @@ local module = require("rsvp.module")
 ---@field width number Window width
 ---@field height number Window height
 ---@field wpm number Words per minute
+---@field show_progress boolean Show progress bar
 local config = {
   border = vim.opt.winborder:get() or "none",
   width = 60,
   height = 20,
   wpm = 300,
+  show_progress = true,
 }
 
 ---@class MyModule
