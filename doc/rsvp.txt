@@ -1,4 +1,4 @@
-*rsvp.txt*          For Neovim >= 0.10.0          Last change: 2026 January 11
+*rsvp.txt*          For Neovim >= 0.10.0          Last change: 2026 January 16
 
 ==============================================================================
 Table of Contents                                     *rsvp-table-of-contents*
@@ -32,7 +32,8 @@ Using lazy.nvim <https://github.com/folke/lazy.nvim>:
         wpm = 300,        -- Initial words per minute
         width = 60,       -- Window width
         height = 20,      -- Window height
-        border = "none", -- Border style: "none", "single", "double", "rounded", "solid", "shadow"
+        border = "none",  -- Border style
+        show_progress = true, -- Show progress bar
       },
     }
 <
@@ -44,6 +45,7 @@ USAGE                                                   *rsvp-rsvp.nvim-usage*
 COMMANDS ~
 
 - `:Rsvp`: Start the RSVP presentation for the current buffer.
+- `:Rsvp <file_name>`: Start the RSVP presentation using the content of the specified file.
 
 
 CONTROLS ~
@@ -51,11 +53,13 @@ CONTROLS ~
 Once the RSVP window is open, you can use the following keymaps:
 
   Key       Action
-  --------- -------------------------
+  --------- --------------------------------
   <Space>   Toggle Play / Pause
   k         Increase WPM by 50
   j         Decrease WPM by 50
+  p         Toggle progress bar visibility
   r         Reset to the first word
+  ?         Show help popup
   q         Close the window
 
 CONFIGURATION                                   *rsvp-rsvp.nvim-configuration*
@@ -74,7 +78,11 @@ CONFIGURATION                                   *rsvp-rsvp.nvim-configuration*
                                                           floating window.
 
   border            string            vim.opt.winborder   Border style for
-                                      or "none"          the window.
+                                      or "none"           the window.
+
+  show_progress     boolean           true                Whether to show
+                                                          the progress bar
+                                                          by default.
   -------------------------------------------------------------------------
 
 DEPENDENCIES                                     *rsvp-rsvp.nvim-dependencies*
