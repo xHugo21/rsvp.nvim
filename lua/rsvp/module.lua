@@ -132,8 +132,20 @@ local function cleanup()
   state = nil
 end
 
-M.start_rsvp = function(config)
-  local words = utils.get_words_from_buffer()
+---@param config table
+---@param filename string?
+M.start_rsvp = function(config, filename)
+  local words
+  if filename and filename ~= "" then
+    words = utils.get_words_from_file(filename)
+    if #words == 0 then
+      vim.notify("Can't RSVP on empty or invalid file: " .. filename, vim.log.levels.WARN)
+      return
+    end
+  else
+    words = utils.get_words_from_buffer()
+  end
+
   if #words == 0 then
     vim.notify("Can't RSVP on empty buffer", vim.log.levels.WARN)
     return

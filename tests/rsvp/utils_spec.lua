@@ -40,6 +40,27 @@ describe("rsvp.utils", function()
     end)
   end)
 
+  describe("file extraction", function()
+    it("extracts words from file correctly", function()
+      local tmp_file = os.tmpname()
+      local f = io.open(tmp_file, "w")
+      if f then
+        f:write("file content test\nmulti line")
+        f:close()
+      end
+
+      local words = utils.get_words_from_file(tmp_file)
+      assert.are.same({ "file", "content", "test", "multi", "line" }, words)
+
+      os.remove(tmp_file)
+    end)
+
+    it("returns empty table for non-existent file", function()
+      local words = utils.get_words_from_file("non_existent_file_xyz_123")
+      assert.are.same({}, words)
+    end)
+  end)
+
   describe("progress bar building", function()
     it("builds empty progress bar", function()
       local bar, filled = utils.build_progress_bar(10, 1, 10)

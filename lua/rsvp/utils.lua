@@ -12,6 +12,22 @@ M.get_words_from_buffer = function()
   return words
 end
 
+---@param file_path string
+---@return string[]
+M.get_words_from_file = function(file_path)
+  local f = io.open(file_path, "r")
+  if not f then
+    return {}
+  end
+  local content = f:read("*all")
+  f:close()
+  local words = {}
+  for word in content:gmatch("%S+") do
+    table.insert(words, word)
+  end
+  return words
+end
+
 ---@param word_len number
 ---@return number
 M.calculate_orp = function(word_len)

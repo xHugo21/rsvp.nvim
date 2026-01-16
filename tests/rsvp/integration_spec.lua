@@ -122,4 +122,33 @@ describe("rsvp integration", function()
     assert.truthy(lines[1]:match("1/5")) -- Back to first word
     assert.truthy(lines[#lines]:match("Play")) -- Back to paused
   end)
+
+  it("loads words from a file when passed as argument", function()
+    local tmp_file = os.tmpname()
+    local f = io.open(tmp_file, "w")
+    if f then
+      f:write("word1 word2 word3")
+      f:close()
+    end
+
+    -- Simulate :Rsvp <tmp_file>
+    rsvp.rsvp({ fargs = { tmp_file } })
+
+    local win = vim.api.nvim_get_current_win()
+    local buf = vim.api.nvim_win_get_buf(win)
+    local lines = vim.api.nvim_buf_get_lines(buf, 0, -1, false)
+
+    -- Check if word1 is rendered
+    local found = false
+    for _, line in ipairs(lines) do
+      if line:match("word1") then found = true end
+    end
+    assert.is_true(found)
+
+    -- Check progress text
+    assert.truthy(lines[1]:match("1/3"))
+
+    vim.api.nvim_win_close(win, true)
+    os.remove(tmp_file)
+  end)
 end)

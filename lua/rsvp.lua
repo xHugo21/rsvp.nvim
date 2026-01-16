@@ -29,8 +29,12 @@ M.setup = function(args)
 end
 
 M.rsvp = function(opts)
+  local filename = nil
+  if opts and opts.fargs and #opts.fargs > 0 then
+    filename = opts.fargs[1]
+  end
   local final_opts = vim.tbl_deep_extend("force", M.config, opts or {})
-  return module.start_rsvp(final_opts)
+  return module.start_rsvp(final_opts, filename)
 end
 
 return M

@@ -26,6 +26,7 @@ Using [lazy.nvim](https://github.com/folke/lazy.nvim):
 ### Commands
 
 - `:Rsvp`: Start the RSVP presentation for the current buffer.
+- `:Rsvp <file_name>`: Start the RSVP presentation using the content of the specified file.
 
 ### Controls
 
